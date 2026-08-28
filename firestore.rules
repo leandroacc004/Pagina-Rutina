@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// Copia y pega este archivo en Firebase Console > Firestore Database > Reglas.
+// Solo un usuario autenticado puede leer/escribir SUS PROPIAS tareas
+// (las que viven bajo su propio uid). Nadie más puede ver ni tocar tus datos.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /usuarios/{userId}/tareas/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
