@@ -9,7 +9,7 @@ const links = [
 ]
 
 export default function Navbar() {
-  const { user, signOut } = useAuth()
+  const { user, isGuest, signOut } = useAuth()
 
   return (
     <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
@@ -34,10 +34,23 @@ export default function Navbar() {
 
         {user && (
           <div className="flex items-center gap-2">
-            {user.photoURL && (
-              <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full" referrerPolicy="no-referrer" />
+            {isGuest ? (
+              <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-xs text-amber-400">
+                Invitado (sesión temporal)
+              </span>
+            ) : (
+              <>
+                {user.photoURL && (
+                  <img
+                    src={user.photoURL}
+                    alt=""
+                    className="h-7 w-7 rounded-full"
+                    referrerPolicy="no-referrer"
+                  />
+                )}
+                <span className="hidden text-sm text-slate-400 sm:inline">{user.displayName}</span>
+              </>
             )}
-            <span className="hidden text-sm text-slate-400 sm:inline">{user.displayName}</span>
             <button
               onClick={signOut}
               className="rounded-lg px-2.5 py-1.5 text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100"
