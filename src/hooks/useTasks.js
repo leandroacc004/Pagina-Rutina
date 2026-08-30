@@ -9,7 +9,6 @@ import {
   query,
   serverTimestamp,
   updateDoc,
-  where,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
@@ -28,19 +27,23 @@ export function useTasks(categoria = null) {
       return
     }
 
+    // Traemos siempre todas las tareas del usuario (ordenadas por fecha) y
+    // filtramos por categoría en el cliente. Así evitamos depender de un
+    // índice compuesto de Firestore (where + orderBy en campos distintos),
+    // y para la cantidad de tareas de una persona no tiene costo real.
     const tareasRef = collection(db, 'usuarios', user.uid, 'tareas')
-    const q = categoria
-      ? query(tareasRef, where('categoria', '==', categoria), orderBy('fechaCreacion', 'desc'))
-      : query(tareasRef, orderBy('fechaCreacion', 'desc'))
+    const q = query(tareasRef, orderBy('fechaCreacion', 'desc'))
 
     setLoading(true)
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const rows = snapshot.docs.map((d) => {
-          const data = d.data()
-          return { id: d.id, ...data, hechoHoy: isTaskDoneToday(data) }
-        })
+        const rows = snapshot.docs
+          .map((d) => {
+            const data = d.data()
+            return { id: d.id, ...data, hechoHoy: isTaskDoneToday(data) }
+          })
+          .filter((t) => !categoria || t.categoria === categoria)
         setTasks(rows)
         setLoading(false)
       },
